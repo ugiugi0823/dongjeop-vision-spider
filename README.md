@@ -1,0 +1,104 @@
+Google Vision Extreme98 Filter API (Release)
+
+개요
+- Google Cloud Vision 라벨을 이용해 이미지 선택/거절을 수행하는 API 서버입니다.
+- 디렉토리/파일 업로드/세션 JSON(URL 다운로드) 3가지 입력 방식을 지원합니다.
+
+필수 준비
+- Python 3.10 이상 (권장: conda env `wxxk`)
+- Google Cloud Vision 서비스 계정 키 파일 배치: 프로젝트 루트에 `gen-lang-client-0067666194-685a6efe4b6a.json`
+
+설치
+```bash
+cd /Users/jhw/kakao/spider/google-vision/release
+conda run -n wxxk pip install -r requirements.txt
+```
+
+서버 실행
+```bash
+cd /Users/jhw/kakao/spider/google-vision
+conda run -n wxxk uvicorn release.vision_api:app --host 0.0.0.0 --port 8000
+# 또는
+conda activate wxxk
+uvicorn release.vision_api:app --host 0.0.0.0 --port 8000
+```
+
+헬스체크
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+엔드포인트
+1) 디렉토리 처리: /process-directory
+ - 입력(JSON):
+```json
+{
+  "directory": "/absolute/path/to/images_or_root",
+  "patterns": ["**/*.webp", "**/*.jpg", "**/*.jpeg", "**/*.png"],
+  "save_images": true,
+  "save_summary": true,
+  "delete_source": false
+}
+```
+ - 동작: 재귀적으로 이미지를 수집해 분석, 선택/거절 파일을 `results/selected`, `results/rejected`로 복사. `save_summary=true`이면 `results/summary.json` 저장. 응답 본문에는 항상 요약 `summary`가 포함.
+
+2) 파일 업로드 처리: /process-uploads
+ - 입력(form-data):
+   - files: 이미지 파일들(여러 개)
+   - save_images (bool)
+   - save_summary (bool)
+   - delete_source (bool, 기본 true)
+ - 예시:
+```bash
+curl -X POST http://127.0.0.1:8000/process-uploads \
+  -F "files=@/abs/path/a.jpg" -F "files=@/abs/path/b.png" \
+  -F "save_images=true" -F "save_summary=true" -F "delete_source=true"
+```
+
+3) 세션 처리(URL 다운로드): /process-session
+ - 입력(JSON):
+```json
+{
+  "session_path": "/absolute/path/to/session_xxx.json",
+  "url_field_priority": ["kakao_object_url", "image_cdn_url"],
+  "save_images": true,
+  "save_summary": true,
+  "delete_source": true
+}
+```
+ - 동작: 세션 JSON의 URL들을 임시 폴더에 다운로드 후 분석. URL 기준 결과 필드 `selected_urls`, `rejected_urls`, `failed_urls` 포함. `delete_source=true`면 임시 폴더 삭제.
+
+응답 공통 필드
+- total_processed, selected_count, rejected_count, selection_rate
+- selected_images, rejected_images
+- summary_path (save_summary=true일 때 경로), summary (본문 포함)
+- process-uploads/process-session: temp_dir, deleted_source
+- process-session: selected_urls, rejected_urls, failed_urls
+
+예시 호출
+```bash
+# 디렉토리
+curl -X POST http://127.0.0.1:8000/process-directory \
+  -H "Content-Type: application/json" \
+  -d '{
+    "directory":"/Users/jhw/kakao/spider/google-vision/test_api2",
+    "patterns":["**/*.jpg"],
+    "save_images":true,
+    "save_summary":true
+  }'
+
+# 세션
+curl -X POST http://127.0.0.1:8000/process-session \
+  -H "Content-Type: application/json" \
+  -d '{
+    "session_path":"/Users/jhw/kakao/spider/google-vision/session_103_20250915_122735.json",
+    "save_images":true,
+    "save_summary":true,
+    "delete_source":true
+  }'
+```
+
+노트
+- 저장 기능을 끈 상태에서도 응답 본문에 `summary`는 항상 포함됩니다.
+- Google Vision 호출에는 과금이 발생할 수 있습니다.
+
