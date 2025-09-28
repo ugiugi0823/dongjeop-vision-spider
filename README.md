@@ -5,21 +5,22 @@ Google Vision Extreme98 Filter API (Release)
 - 디렉토리/파일 업로드/세션 JSON(URL 다운로드) 3가지 입력 방식을 지원합니다.
 
 필수 준비
-- Python 3.10 이상 (권장: conda env `wxxk`)
+ - Python 3.10 이상 및 가상환경(venv)
 - Google Cloud Vision 서비스 계정 키 파일 배치: 프로젝트 루트에 `gen-lang-client-0067666194-685a6efe4b6a.json`
 
 설치
 ```bash
-cd /Users/jhw/kakao/spider/google-vision/release
-conda run -n wxxk pip install -r requirements.txt
+cd release
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 서버 실행
 ```bash
-cd /Users/jhw/kakao/spider/google-vision
-conda run -n wxxk uvicorn release.vision_api:app --host 0.0.0.0 --port 8000
-# 또는
-conda activate wxxk
+# 프로젝트 루트에서 실행 권장 (모듈 경로: release.vision_api)
+cd <project_root>
+source release/.venv/bin/activate
 uvicorn release.vision_api:app --host 0.0.0.0 --port 8000
 ```
 
@@ -81,7 +82,7 @@ curl -X POST http://127.0.0.1:8000/process-uploads \
 curl -X POST http://127.0.0.1:8000/process-directory \
   -H "Content-Type: application/json" \
   -d '{
-    "directory":"/Users/jhw/kakao/spider/google-vision/test_api2",
+    "directory":"./test_api2",
     "patterns":["**/*.jpg"],
     "save_images":true,
     "save_summary":true
@@ -91,7 +92,7 @@ curl -X POST http://127.0.0.1:8000/process-directory \
 curl -X POST http://127.0.0.1:8000/process-session \
   -H "Content-Type: application/json" \
   -d '{
-    "session_path":"/Users/jhw/kakao/spider/google-vision/session_103_20250915_122735.json",
+    "session_path":"./session_103_20250915_122735.json",
     "save_images":true,
     "save_summary":true,
     "delete_source":true
