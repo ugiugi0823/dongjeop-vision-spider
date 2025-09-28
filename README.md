@@ -99,6 +99,73 @@ curl -X POST http://127.0.0.1:8000/process-session \
   }'
 ```
 
+예상 응답(JSON 예시)
+```json
+// /process-directory (save_images=true, save_summary=true)
+{
+  "total_processed": 71,
+  "selected_count": 31,
+  "rejected_count": 40,
+  "selection_rate": 0.4366,
+  "selected_images": [
+    "./test_api2/image_018.jpg",
+    "./test_api2/image_030.jpg"
+  ],
+  "rejected_images": [
+    "./test_api2/image_024.jpg",
+    "./test_api2/image_031.jpg"
+  ],
+  "summary_path": "results/summary.json",
+  "summary": {
+    "filter_name": "Extreme 98% Filter",
+    "timestamp": "2025-09-28T14:19:36.826Z",
+    "total_processed": 71,
+    "selected_count": 31,
+    "rejected_count": 40,
+    "selection_rate": 0.4366,
+    "selected_images": ["..."],
+    "rejected_images": ["..."]
+  }
+}
+
+// /process-session (save_images=false, save_summary=false)
+{
+  "total_processed": 20,
+  "selected_count": 12,
+  "rejected_count": 8,
+  "selection_rate": 0.6,
+  "selected_images": [
+    "data/uploads/session-<uuid>/20250915_122727_93347262.jpg"
+  ],
+  "rejected_images": [
+    "data/uploads/session-<uuid>/20250915_122728_41102897.jpg"
+  ],
+  "selected_urls": [
+    "https://objectstorage.../20250915_122727_93347262.jpg"
+  ],
+  "rejected_urls": [
+    "https://objectstorage.../20250915_122728_41102897.jpg"
+  ],
+  "failed_urls": [],
+  "summary_path": null,
+  "summary": {
+    "filter_name": "Extreme 98% Filter",
+    "timestamp": "2025-09-28T10:12:34.567Z",
+    "total_processed": 20,
+    "selected_count": 12,
+    "rejected_count": 8,
+    "selection_rate": 0.6,
+    "selected_images": ["..."],
+    "rejected_images": ["..."],
+    "selected_urls": ["..."],
+    "rejected_urls": ["..."],
+    "failed_urls": []
+  },
+  "deleted_source": true,
+  "temp_dir": "data/uploads/session-<uuid>"
+}
+```
+
 노트
 - 저장 기능을 끈 상태에서도 응답 본문에 `summary`는 항상 포함됩니다.
 - Google Vision 호출에는 과금이 발생할 수 있습니다.
